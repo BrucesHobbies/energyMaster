@@ -6,7 +6,7 @@ Copyright(C) 2021, BrucesHobbies, All Rights Reserved
 # energyMaster™ Project Overview
 EnergyMaster is designed to monitor and log energy consumption from home devices. Enery is monitored using low-cost PZEM modules which are connected by a single twisted pair (2-conductor) low voltage RS-485 than can run over 1,000 ft or 300 meters to a USB dongle on a low-cost Raspberry Pi (RPi). The devices can be placed centrally near the circuit breaker panel or remotely using the USB RS-485 to the module.
 
-EnergyMaster is designed to detect abnormal operation of elecrical devices generating status and alert emails that can be sent to another email or as an SMS text to your cell phone when abnormal runtime or power useage is detected.
+EnergyMaster is designed to detect abnormal operation of electrical devices generating status and alert emails that can be sent to another email or as an SMS text to your cell phone when abnormal runtime or power usage is detected.
 
 Period statistics include:
 - Daily:
@@ -68,7 +68,7 @@ Consult an electrician for your local electrical codes. Also refer to the docume
 ![Figure 2: PZEM Wiring](https://github.com/BrucesHobbies/energyMaster/blob/main/figures/figure2.png)
 
 # Required Hardware 
-As an Amazon Associate I earn a small commission from qualifying purchases. It does not in anyway change the prices on Amazon. I appreciate your support, if you purchase using the links below.
+As an Amazon Associate I earn a small commission from qualifying purchases. It does not in any way change the prices on Amazon. I appreciate your support, if you purchase using the links below.
 
 ## PZEM Module (about $20 USD)
 For Alternating Current (AC) devices
@@ -118,7 +118,7 @@ Verify PZEM module presence using the RPi command line (once attached by USB cab
     lsusb -v           # Show USB devices with details
 
 ## Step 3: Configure energyMaster software (optional)
-To add additional PZEM modules, add a name to the channames list in energyMaster.py. The example below is for four devices on separate USB dongles.
+To add additional PZEM modules, add a name to the chanNames list in energyMaster.py. The example below is for four devices on separate USB dongles.
 
     chanNames = ["Device1","Device2","Device3","Device4"]
     chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"]   # One entry per chanName[]
@@ -191,7 +191,7 @@ Once you have created an account, start the energyMaster™ program.   Type:
 
     python3 energyMaster.py
 
-The first time the program starts up it will ask you for your email user id and password for the account that you just created to work with this program. The password will be saved to a file called cfgData.json.  Please be careful to not send that file to others. If you ever change your password you will need to delete emailCfg.json so that the program will ask you for your password again. 
+The first time the program starts up it will ask you for your email user id and password for the account that you just created to work with this program. The password will be saved to a file called emailCfg.json.  Please be careful to not send that file to others. If you ever change your password you will need to delete emailCfg.json so that the program will ask you for your password again. 
 
     Enter sender’s device email userid (sending_userid@gmail.com):
     sending_userid@gmail.com
