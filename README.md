@@ -59,6 +59,8 @@ Send status and alert messages via email or SMS to a cell phone
 - Email
 - SMS text message to your cell phone
 
+An example Python script is included that plots the power cycles and consumption used by various devices over varying time periods such as 48-hours, 2-weeks, monthly, and yearly.
+
 Monitoring of device energy is done through a PZEM module.
 
 ![Figure 1: PZEM](https://github.com/BrucesHobbies/energyMaster/blob/main/figures/figure1.png)
