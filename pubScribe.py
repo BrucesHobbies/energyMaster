@@ -8,7 +8,8 @@ AUTHOR: BrucesHobbies
 DATE: 3/01/2021
 REVISION HISTORY
   DATE        AUTHOR          CHANGES
-  yyyy/mm/dd  --------------- -------------------------------------
+  yyyy/mm/dd  --------------- ------------------------------------------------
+  2021/04/14  BrucesHobbies   Added support for Antonio's variable tone buzzer
 
 
 OVERVIEW:
@@ -85,6 +86,11 @@ INFLUX_USER       = "rpi"              # requires write access
 INFLUX_PASSWORD   = "rpi" 
 INFLUX_DBNAME     = "sensor_data"
 
+# BUZZER
+BUZZER_ENABLED = 0
+buzzerPIN = 18                         # Customize based on your wiring
+
+
 # --- END USER CONFIGURATION ---
 
 
@@ -97,6 +103,10 @@ if EMAIL_SMS_ENABLED :
 
 if INFLUX_DB_ENABLED :
     from influxdb import InfluxDBClient
+
+if BUZZER_ENABLED :
+    import RPi.GPIO as GPIO
+    from threading import Timer
 
 
 def connectPubScribe() :
@@ -113,6 +123,11 @@ def connectPubScribe() :
     if INFLUX_DB_ENABLED :
         influxClient = InfluxDBClient(INFLUX_HOST, INFLUX_PORT, INFLUX_USER, INFLUX_PASSWORD, INFLUX_DBNAME)
 
+    if BUZZER_ENABLED :
+        # GPIO.setwarnings(False)           # Remove warning message
+        GPIO.setmode(GPIO.BCM)              # Set the pin mode to BOARD mode
+        GPIO.setup(buzzerPIN, GPIO.OUT)     # Buzzer is output mode
+
     return
 
 
@@ -120,6 +135,9 @@ def connectPubScribe() :
 def disconnectPubScribe() :
     if MQTT_ENABLED :
         mqttClient.disconnect()
+
+    if BUZZER_ENABLED :
+        GPIO.cleanup()
 
     return
 
@@ -132,6 +150,7 @@ MQTT = 'MQTT'
 CSV_FILE = 'CSV_FILE'
 EMAIL_SMS = 'EMAIL_SMS'
 INFLUX_DB = 'INFLUX_DB'
+BUZZER = 'BUZZER'
 
 
 #
@@ -173,6 +192,9 @@ def pubRecord(dest, topic, data, hdr="") :
         else :
             msg = data
         influxClient.write_points(msg)
+
+    if BUZZER_ENABLED and (BUZZER in dest) :
+        buzzerOn(data)
 
     return
 
@@ -270,6 +292,30 @@ def sendStatus(subj, msg) :
 
 
 #
+# Buzzer On
+#
+buzzer = []
+
+def buzzerOn(data) :
+    global buzzer
+    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S '),"Buzzer On", " F: ", data.get('Frequency', 700),  " DC: ", data.get('Dutycycle', 10),  " Duration(s): ", data.get('Duration',10))
+
+    buzzer = GPIO.PWM(buzzerPIN, data.get('Frequency', 700))    # Default is 700 Hz
+    buzzer.start(data.get('Dutycycle', 10))                      # Default is 10%
+    Timer(data.get('Duration',10), buzzerOff).start()            # Default is 10 seconds
+
+
+#
+# Buzzer Off
+#
+def buzzerOff() :
+    global buzzer
+    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S '), "Buzzer Off")
+    buzzer.stop()
+
+
+
+#
 # Test / debug
 #
 if __name__ == '__main__':
@@ -293,5 +339,16 @@ if __name__ == '__main__':
     topic = "Sensor/topic"
     sVar = '6.4, 3.2, 4.5, 0.95'
     pubRecord(CSV_FILE, topic, sVar, "Col1,Col2,Col3,Col4")
+
+    # Test buzzer
+    if BUZZER_ENABLED :
+        pubRecord(BUZZER, "", {'Frequency': 500, 'Dutycycle': 20, 'Duration': 20})
+        time.sleep(60)
+
+        pubRecord(BUZZER, "", {})
+        time.sleep(60)
+
+        pubRecord(BUZZER, "", {'Frequency': 900, 'Dutycycle': 30, 'Duration': 40})
+        time.sleep(60)
 
     disconnectPubScribe()
