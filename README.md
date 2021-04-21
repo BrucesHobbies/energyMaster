@@ -75,6 +75,7 @@ As an Amazon Associate I earn a small commission from qualifying purchases. It d
 ## PZEM Module (about $20 USD)
 For Alternating Current (AC) devices
 - One of the following AC power PZEM-016 modules - may have different shipping times
+  - [Amazon: PZEM-016](https://amzn.to/2QlplIX)
   - [Amazon: PZEM-016](https://amzn.to/394y8VT)
   - [Amazon: PZEM-016](https://amzn.to/2PhmK1M)
   - [Amazon: PZEM-016](https://amzn.to/3lG36su)
