@@ -80,10 +80,6 @@ For Alternating Current (AC) devices
   - [Amazon: PZEM-016](https://amzn.to/2PhmK1M)
   - [Amazon: PZEM-016](https://amzn.to/3lG36su)
 
-For Direct Current (DC) devices
-- One of the following DC power PZEM-017 modules - may have different shipping times
-  - [Amazon: PZEM-017](https://amzn.to/315rXwv)
-
 2-conductor low voltage wire as needed (RS-485 connection from PZEM module to USB dongle)
 
 ## Raspberry Pi system (if you don’t already own one)
