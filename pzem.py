@@ -8,7 +8,8 @@ Date: 3/22/2021
 REVISION HISTORY
   DATE        AUTHOR          CHANGES
   yyyy/mm/dd  --------------- -------------------------------------
-
+  2022/03/26  BrucesHobbies   Added enchanced debug
+                              Changed PZEM-017 model from "not verified" to "not supported"
 
 OVERVIEW:
     Read PZEM series AC and DC sensor modules. The AC modules measure
@@ -44,10 +45,10 @@ GENERAL INFORMATION:
         lsusb -v           # Show USB devices with details
 
 PZEM MODULES
-Commmunication interface: RS-485
-Communication protocol: 9600N81
 
 AC MODULES (80-260V):
+Commmunication interface: RS-485
+Communication protocol: 9600N81
   PZEM-014: Measuring Range  10A (Internal shunt)
   PZEM-016: Measuring Range 100A (External shunt supplied with unit)
 
@@ -67,7 +68,9 @@ Need to implement set address, alarm threshold, reset energy, and calibration fo
 
 
 DC MODULES (7-300V):
-(Have not verified all 9 of the DC module software interfaces.)
+Commmunication interface: RS-485
+Communication protocol: 9600N82
+(Have not verified. Not supported DC module software interfaces. Please feel free to contribute.)
   PZEM-003        10A Internal shunt
   PZEM-017-3/7    50A External shunt
   PZEM-017-4/8   100A External shunt
@@ -144,8 +147,8 @@ def readDcPZEM(chanPort, chanAddr) :
     highVoltAlarmStatus = 0
     lowVoltAlarmStatus = 0
 
-    #Connect to the serial modbus server
-    client = ModbusClient(method = "rtu", port=chanPort, stopbits = 1, bytesize = 8, parity = 'N', baudrate = 9600)
+    #Connect to the serial modbus server, note PZEM-017 is 2 stop bits
+    client = ModbusClient(method = "rtu", port=chanPort, stopbits = 2, bytesize = 8, parity = 'N', baudrate = 9600)
     
     if client.connect ():
         try :
@@ -184,6 +187,11 @@ def calibrationPowerMeter(chanPort, chanAddr) :
 
 
 if __name__ == '__main__':
+    import logging
+    logging.basicConfig()
+    log = logging.getLogger()
+    log.setLevel(logging.DEBUG)
+  
     chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
     chanAddrs = [0x01, 0x01]
 
@@ -197,3 +205,14 @@ if __name__ == '__main__':
     print(str(frequency) + 'Hz')
     print(str(powerFactor) + " power factor")
     print(str(alarmStatus) + " alarm status")
+
+    chan = 1
+    print("Test PZEM-017 module on ", chanPorts[chan], " with channel address of ", chanAddrs[chan], "by performing read of 8 registers:")
+    voltage, amperage, power, energy, highVoltAlarmStatus, lowVoltAlarmStatus = readDcPZEM(chanPorts[chan], chanAddrs[chan])
+    print(str(voltage) + 'V')
+    print(str(amperage) + 'A')
+    print(str(power) + 'W')
+    print(str(energy) + 'Wh')
+    print(str(highVoltAlarmStatus) + ' highVoltAlarmStatus')
+    print(str(lowVoltAlarmStatus) + ' lowVoltAlarmStatus')
+ 
