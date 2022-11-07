@@ -8,6 +8,7 @@ Date: 3/22/2021
 REVISION HISTORY
   DATE        AUTHOR          CHANGES
   yyyy/mm/dd  --------------- -------------------------------------
+  2022/11/06  BrucesHobbies   Added setAddrPowerMeter() and setAlarmThresholdPowerMeter()
   2022/03/26  BrucesHobbies   Added enchanced debug
                               Changed PZEM-017 model from "not verified" to "not supported"
 
@@ -170,12 +171,40 @@ def readDcPZEM(chanPort, chanAddr) :
 
 
 def setAddrPowerMeter(chanPort, chanAddr, newChanAddr) :
-    print("Not implemented.")
+    print("PZEM-016 module on ", chanPort, " with address of ", chanAddr, " changing to: ", newChanAddr)
+    client = ModbusClient(method = "rtu", port=chanPort, stopbits = 1, bytesize = 8, parity = 'N', baudrate = 9600)
+    
+    if client.connect() :
+        try :
+            result = client.write_register (0x0002, newChanAddr, unit = chanAddr)
+
+        except Exception as e :
+            print('Exception writing AC PZEM: ' + str(e))
+
+        finally :
+            client.close()
     return
 
+  
 def setAlarmThresholdPowerMeter(chanPort, chanAddr, alarmThreshold) :
-    print("Not implemented.")
+    if alarmThreshold < 0 or alarmThreshold > 23000 :
+        print("Exceeded alarm threshold range.")
+        return
+
+    print("PZEM-016 module on ", chanPort, " with address of ", chanAddr, " changing alarm threshold to: ", alarmThreshold)
+    client = ModbusClient(method = "rtu", port=chanPort, stopbits = 1, bytesize = 8, parity = 'N', baudrate = 9600)
+    
+    if client.connect() :
+        try :
+            result = client.write_register (0x0001, alarmThreshold, unit = chanAddr)
+
+        except Exception as e :
+            print('Exception writing AC PZEM: ' + str(e))
+
+        finally :
+            client.close()   
     return
+
 
 def resetEnergyPowerMeter(chanPort, chanAddr) :
     print("Not implemented.")
@@ -185,19 +214,9 @@ def calibrationPowerMeter(chanPort, chanAddr) :
     print("Not implemented.")
     return
 
-
-if __name__ == '__main__':
-    import logging
-    logging.basicConfig()
-    log = logging.getLogger()
-    log.setLevel(logging.DEBUG)
-  
-    chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
-    chanAddrs = [0x01, 0x01]
-
-    chan = 0
-    print("Test PZEM-016 module on ", chanPorts[chan], " with channel address of ", chanAddrs[chan], "by performing read of 10 registers:")
-    voltage, amperage, power, energy, frequency, powerFactor, alarmStatus = readAcPZEM(chanPorts[chan], chanAddrs[chan])
+def read_pzem(chanPort, chanAddr) :
+    print("Test PZEM-016 module on ", chanPort, " with channel address of ", chanAddr, " by performing read of 10 registers:")
+    voltage, amperage, power, energy, frequency, powerFactor, alarmStatus = readAcPZEM(chanPort, chanAddr)
     print(str(voltage) + 'V')
     print(str(amperage) + 'A')
     print(str(power) + 'W')
@@ -206,13 +225,35 @@ if __name__ == '__main__':
     print(str(powerFactor) + " power factor")
     print(str(alarmStatus) + " alarm status")
 
-    chan = 1
-    print("Test PZEM-017 module on ", chanPorts[chan], " with channel address of ", chanAddrs[chan], "by performing read of 8 registers:")
-    voltage, amperage, power, energy, highVoltAlarmStatus, lowVoltAlarmStatus = readDcPZEM(chanPorts[chan], chanAddrs[chan])
-    print(str(voltage) + 'V')
-    print(str(amperage) + 'A')
-    print(str(power) + 'W')
-    print(str(energy) + 'Wh')
-    print(str(highVoltAlarmStatus) + ' highVoltAlarmStatus')
-    print(str(lowVoltAlarmStatus) + ' lowVoltAlarmStatus')
- 
+
+if __name__ == '__main__':
+    #import logging
+    #logging.basicConfig()
+    #log = logging.getLogger()
+    #log.setLevel(logging.DEBUG)
+  
+    chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
+    chanAddrs = [0x01, 0x01]
+    chan = 0
+    changeAddressFlag = False
+    
+    # if two arguements are provided on the command line change the single device address, for example to change from 1 to 5
+    # python3 pzem.py 1 5
+    if len(sys.argv) > 1 :
+        addr = int(sys.argv[1])
+        if addr > 0 and addr < 255 :
+            chanAddrs[0] = addr
+
+            if len(sys.argv) > 2 :
+                addr = int(sys.argv[2])
+                if addr > 0 and addr < 255 :
+                    chanAddrs[1] = addr
+                    changeAddressFlag = True    
+                    
+    read_pzem(chanPorts[chan], chanAddrs[chan])
+           
+    if changeAddressFlag :
+        print("Change address from ", chanAddrs[0], " to ", chanAddrs[1])
+        setAddrPowerMeter(chanPorts[chan], chanAddrs[0], chanAddrs[1])
+        read_pzem(chanPorts[chan], chanAddrs[1])
+
